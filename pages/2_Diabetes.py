@@ -51,8 +51,7 @@ def generate_pdf(advice_text, name, age, glucose, height, weight, bmi, insulin, 
     style_normal = styles["Normal"]
 
     # Logo (optional)
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    logo_path = os.path.join(base_dir, "assets", "healthpredict_logo.png")
+    logo_path = os.path.join("assets", "healthpredict_logo.png")
 
     if os.path.exists(logo_path):
         img = Image(logo_path, width=2*inch, height=1*inch)
