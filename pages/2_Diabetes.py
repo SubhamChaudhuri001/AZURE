@@ -109,9 +109,13 @@ col1, col2 = st.columns(2)
 
 with col1:
     age = st.number_input("Age", 18, 120)
-    glucose = st.number_input("Glucose Level", 50, 300)
-    insulin = st.number_input("Insulin Level (Optional)", 0, 500,value=80)
-    st.caption("If unknown, keep default value (80).")
+    height = st.number_input("Height (in cm)", 100.0, 250.0)
+    if height <= 0:
+        st.error("Height must be greater than zero.")
+        st.stop()
+    glucose = st.number_input("Glucose Level", 50, 500)
+    if glucose > 300:
+        st.error("🚨 Extremely high glucose level. Please seek medical attention immediately.")
 
 with col2:
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -119,11 +123,9 @@ with col2:
         gender_encoded = 1
     else:
         gender_encoded = 0
-    height = st.number_input("Height (in cm)", 100.0, 250.0)
-    if height <= 0:
-        st.error("Height must be greater than zero.")
-        st.stop()
     weight = st.number_input("Weight (in kg)", 30.0, 200.0)
+    insulin = st.number_input("Insulin Level (Optional)", 0, 500,value=80)
+    st.caption("If unknown, keep default value (80).")
 
 if st.button("Predict Diabetes Risk"):
 
@@ -131,22 +133,47 @@ if st.button("Predict Diabetes Risk"):
     st.info(f"Calculated BMI: {bmi:.2f}")
 
     data = np.array([[glucose, bmi, insulin, age, gender_encoded]])
-    prediction = model.predict(data)[0]
-    probability = model.predict_proba(data)[0][1] * 100
 
-    # 🔥 Risk Level Logic (Same as Heart Page)
-    if prediction == 0:
-        risk_text = f"Low Risk ({probability:.2f}%)"
-        st.success(f"🟢 {risk_text}")
+    if hasattr(model, "predict_proba"):
+        probability = model.predict_proba(data)[0][1] * 100
     else:
-        risk_text = f"Diabetes Risk Detected ({probability:.2f}%)"
-        st.error(f"🔴 {risk_text}")
+        probability = float(model.predict(data)[0]) * 100
+
+    risk_text = f"{probability:.2f}% probability of diabetes"
+
+    if probability < 33:
+        st.success(f"🟢 Low Risk Zone ({probability:.2f}%)")
+    elif probability < 66:
+        st.warning(f"🟡 Moderate Risk Zone ({probability:.2f}%)")
+    else:
+        st.error(f"🔴 High Risk Zone ({probability:.2f}%)")
 
     st.progress(int(probability))
+    st.subheader("🔎 Key Risk Indicators")
+
+    risk_factors = []
+    if glucose > 140:
+        risk_factors.append("High glucose level")
+
+    if bmi > 30:
+        risk_factors.append("Obesity (High BMI)")
+
+    if insulin > 200:
+        risk_factors.append("High insulin level")
+
+    if age > 45:
+        risk_factors.append("Age-related risk factor")
+
+    if risk_factors:
+        for factor in risk_factors:
+            st.write(f"⚠ {factor}")
+    else:
+        st.write("No major metabolic red flags detected.")
+
     st.caption("⚠️ This probability is based on statistical ML prediction, not clinical diagnosis.")
 
     prompt = f"""
-        Patient {name}, Age {age}, Glucose {glucose}, Height {height} cm, Weight {weight} kg, BMI {bmi:.2f}, Insulin {insulin}, Gender {gender_encoded}. 
+        Patient {name}, Age {age}, Glucose {glucose}, Height {height} cm, Weight {weight} kg, BMI {bmi:.2f}, Insulin {insulin}, Gender {gender}. 
         Risk: {risk_text}. 
 
         Provide:

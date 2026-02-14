@@ -7,29 +7,43 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
 # Load dataset
-df = pd.read_csv("../data/heart.csv")
+df = pd.read_csv("../data/dataset-framingham-heart-study.csv")
 print(df.columns)
 
-# ✅ Correct feature columns for THIS dataset
-X = df[['age', 'sex', 'trestbps', 'chol', 'thalach']]
-y = df['target']
+# Remove missing values
+df = df.dropna()
+
+# ✅ Use 9 strong features
+X = df[['male',
+        'age',
+        'currentSmoker',
+        'diabetes',
+        'totChol',
+        'sysBP',
+        'diaBP',
+        'BMI',
+        'glucose']]
+
+# Target column
+y = df['TenYearCHD']
 
 # Train-test split
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# Train model
+# Pipeline with scaling
 model = Pipeline([
     ("scaler", StandardScaler()),
-    ("clf", LogisticRegression(max_iter=1000))
+    ("clf", LogisticRegression(max_iter=2000))
 ])
+
 model.fit(X_train, y_train)
 
 # Accuracy
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-print("❤️ Heart Model Accuracy:", accuracy)
+print("❤️ Framingham 9-Feature Model Accuracy:", accuracy)
 
 # Save model
 pickle.dump(model, open("heart_model.pkl", "wb"))

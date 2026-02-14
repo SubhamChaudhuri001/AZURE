@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import os
 import pytz
+import uuid
 from llm_utils import generate_health_advice
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
@@ -35,7 +36,8 @@ st.sidebar.markdown(
 )
 
 # PDF Generator
-def generate_pdf(advice_text, name, age, gender, trestbps, chol, thalach, risk_text):
+def generate_pdf(advice_text, name, age, gender, smoker, diabetes, totChol, sysBP, diaBP, height, weight, bmi, glucose, risk_text):
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -51,7 +53,6 @@ def generate_pdf(advice_text, name, age, gender, trestbps, chol, thalach, risk_t
     style_normal = styles["Normal"]
 
     logo_path = os.path.join("assets", "healthpredict_logo.png")
-
     if os.path.exists(logo_path):
         img = Image(logo_path, width=2*inch, height=1*inch)
         img.hAlign = 'CENTER'
@@ -59,6 +60,10 @@ def generate_pdf(advice_text, name, age, gender, trestbps, chol, thalach, risk_t
         elements.append(Spacer(1, 0.2 * inch))
 
     elements.append(Paragraph("<b><u>AI-Based Heart Disease Risk Report</u></b>", styles["Heading1"]))
+    report_id = str(uuid.uuid4())[:8]
+
+    elements.append(Spacer(1, 0.2 * inch))
+    elements.append(Paragraph(f"<b>Report ID:</b> HP-{report_id}", style_normal))
 
     elements.append(Spacer(1, 0.2 * inch))
     elements.append(Paragraph(
@@ -73,9 +78,15 @@ def generate_pdf(advice_text, name, age, gender, trestbps, chol, thalach, risk_t
     elements.append(Spacer(1, 0.2 * inch))
     elements.append(Paragraph(f"Age: {age}", style_normal))
     elements.append(Paragraph(f"Gender: {gender}", style_normal))
-    elements.append(Paragraph(f"Resting Blood Pressure: {trestbps} mm Hg", style_normal))
-    elements.append(Paragraph(f"Cholesterol: {chol} mg/dl", style_normal))
-    elements.append(Paragraph(f"Maximum Heart Rate: {thalach}", style_normal))
+    elements.append(Paragraph(f"Height: {height} cm", style_normal))
+    elements.append(Paragraph(f"Weight: {weight} kg", style_normal))
+    elements.append(Paragraph(f"Calculated BMI: {bmi:.2f}", style_normal))
+    elements.append(Paragraph(f"Smoker: {smoker}", style_normal))
+    elements.append(Paragraph(f"Diabetes: {diabetes}", style_normal))
+    elements.append(Paragraph(f"Total Cholesterol: {totChol}", style_normal))
+    elements.append(Paragraph(f"Systolic BP: {sysBP}", style_normal))
+    elements.append(Paragraph(f"Diastolic BP: {diaBP}", style_normal))
+    elements.append(Paragraph(f"Glucose: {glucose}", style_normal))
 
     elements.append(Spacer(1, 0.2 * inch))
     elements.append(Paragraph(f"<b>Prediction Result:</b> {risk_text}", style_normal))
@@ -98,49 +109,102 @@ def generate_pdf(advice_text, name, age, gender, trestbps, chol, thalach, risk_t
     return buffer
 
 # Main Page
-
 st.header("❤️ Heart Disease Risk Prediction")
 name = st.text_input("Patient Name")
 col1, col2 = st.columns(2)
 
 with col1:
-    age = st.number_input("Age", 18, 120)
-    trestbps = st.number_input("Resting Blood Pressure (mm Hg)", 80, 200)
-    chol = st.number_input("Cholesterol (mg/dl)", 100, 400)
+    age = st.number_input("Age", 18, 100)
+    height = st.number_input("Height (cm)", 120.0, 220.0)
+    sysBP = st.number_input("Systolic BP (mmHg)", 80, 200)
+    glucose = st.number_input("Glucose Level", 50, 300)
+    diabetes = st.selectbox("Diabetes?", ["No", "Yes"])
+    diabetes_encoded = 1 if diabetes == "Yes" else 0
 
 with col2:
     gender = st.selectbox("Gender", ["Male", "Female"])
-    if gender == "Male":
-        gender_encoded = 1
-    else:
-        gender_encoded = 0
-    thalach = st.number_input("Maximum Heart Rate", 60, 220)
+    male = 1 if gender == "Male" else 0
+    weight = st.number_input("Weight (kg)", 30.0, 200.0)
+    diaBP = st.number_input("Diastolic BP (mmHg)", 50, 130)
+    totChol = st.number_input("Total Cholesterol (mg/dL)", 100, 400)
+    smoker = st.selectbox("Current Smoker?", ["No", "Yes"])
+    currentSmoker = 1 if smoker == "Yes" else 0
+
 
 if st.button("Predict Heart Risk"):
 
-    data = np.array([[age, gender_encoded, trestbps, chol, thalach]])
-    prediction = model.predict(data)[0]
-    probability = model.predict_proba(data)[0][1] * 100
+    if height <= 0:
+        st.error("Height must be greater than zero.")
+        st.stop()
 
-    if prediction == 0:
-        risk_text = f"Low Risk ({probability:.2f}%)"
-        st.success(f"🟢 {risk_text}")
+    bmi = weight / ((height / 100) ** 2)
+    st.info(f"Calculated BMI: {bmi:.2f}")
+
+    data = np.array([[male,age,currentSmoker,diabetes_encoded,totChol,sysBP,diaBP,bmi,glucose]])
+
+    if hasattr(model, "predict_proba"):
+        probability = model.predict_proba(data)[0][1] * 100
     else:
-        risk_text = f"Heart Disease Risk Detected ({probability:.2f}%)"
-        st.error(f"🔴 {risk_text}")
+        probability = float(model.predict(data)[0]) * 100
+
+    risk_text = f"{probability:.2f}% probability of heart disease"
+
+    if probability < 33:
+        st.success(f"🟢 Low Risk Zone ({probability:.2f}%)")
+    elif probability < 66:
+        st.warning(f"🟡 Moderate Risk Zone ({probability:.2f}%)")
+    else:
+        st.error(f"🔴 High Risk Zone ({probability:.2f}%)")
 
     st.progress(int(probability))
-    st.caption("⚠️ This probability is based on statistical ML prediction, not clinical diagnosis.")
+    st.subheader("🔎 Key Risk Indicators")
+
+    risk_factors = []
+
+    if sysBP > 140:
+        risk_factors.append("High systolic blood pressure")
+
+    if diaBP > 90:
+        risk_factors.append("High diastolic blood pressure")
+
+    if totChol > 240:
+        risk_factors.append("High cholesterol")
+
+    if bmi > 30:
+        risk_factors.append("Obesity (High BMI)")
+
+    if glucose > 125:
+        risk_factors.append("High glucose level")
+
+    if currentSmoker == 1:
+        risk_factors.append("Current smoker")
+
+    if diabetes_encoded == 1:
+        risk_factors.append("Diabetes condition")
+
+    if risk_factors:
+        for factor in risk_factors:
+            st.write(f"⚠ {factor}")
+    else:
+        st.write("No major clinical red flags detected.")
+
+    st.caption(
+    "⚠️ This probability is derived from Logistic Regression model output. "
+    "Values closer to 0% or 100% indicate stronger model confidence. "
+    "This is not a medical diagnosis."
+    )
 
     prompt = f"""
-    Patient {name}, Age {age}, BP {trestbps}, Cholesterol {chol}, HR {thalach}, Gender {gender_encoded}.
-    Risk: {risk_text}.
+    Patient {name}, Age {age},Gender {gender}, Smoker: {smoker}, Diabetes: {diabetes},
+    Total Cholesterol: {totChol},Systolic BP: {sysBP}, Diastolic BP: {diaBP},BMI: {bmi:.2f},
+    Glucose: {glucose}. 10-year CHD Risk: {risk_text}.
 
         Provide:
         - Recommended diet
         - Foods to avoid
         - Exercise plan
-        - Heart health tips
+        - Lifestyle improvements
+        - Cardiovascular risk reduction tips
 
         Keep it short and practical.
 
@@ -156,7 +220,7 @@ if st.button("Predict Heart Risk"):
     st.subheader("💞 AI Health Advice")
     st.write(advice)
 
-    pdf_buffer = generate_pdf(advice, name, age, gender, trestbps, chol, thalach, risk_text)
+    pdf_buffer = generate_pdf(advice, name, age, gender, smoker, diabetes, totChol, sysBP, diaBP, height, weight, bmi, glucose, risk_text)
 
     st.download_button(
         label="📜 Download PDF Report",
