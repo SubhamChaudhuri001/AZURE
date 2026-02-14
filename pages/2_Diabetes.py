@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import os
+import pytz
 from llm_utils import generate_health_advice
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
@@ -62,7 +63,8 @@ def generate_pdf(advice_text, name, age, glucose, height, weight, bmi, insulin, 
     elements.append(Paragraph("<b><u>AI-Based Diabetes Risk Report</u></b>", styles["Heading1"]))
     elements.append(Spacer(1, 0.3 * inch))
 
-    elements.append(Paragraph(f"<b>Date:</b> {datetime.now().strftime('%d-%m-%Y %H:%M')}", style_normal))
+    elements.append(Paragraph(
+        f"<b>Date:</b> {datetime.now(pytz.timezone('Asia/Kolkata')).strftime('%d-%m-%Y %H:%M')}",style_normal))
 
     display_name = name if name.strip() != "" else "Not Provided"
     elements.append(Paragraph(f"<b>Patient Name:</b> {display_name}", style_normal))
