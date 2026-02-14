@@ -86,26 +86,34 @@ HealthPredictAI/
 ## ▶️ How to Run the Project
 
 1️⃣ Clone the Repository
-
+```bash
 git clone <your-repo-link>
 cd HealthPredictAI
+```
 
 2️⃣ Install Dependencies
 
+```bash
 pip install -r requirements.txt
+```
 
 3️⃣ Add API Key
 
 Create a file:
-
+```bash
 .streamlit/secrets.toml
+```
 
 Add:
+```bash
 HUGGINGFACE_API_KEY = "your_api_key_here"
+```
 
 4️⃣ Run the App
 
+```bash
 streamlit run Main_APP.py
+```
 
 ---
 
