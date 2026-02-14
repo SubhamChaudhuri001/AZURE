@@ -1,4 +1,3 @@
-
 # 🏥 HealthPredict AI — AI-Powered Multi-Disease Risk Prediction & Preventive Healthcare System
 
 HealthPredict AI is a full-stack AI-powered healthcare web application that predicts the risk of Heart Disease and Diabetes using Machine Learning models and provides intelligent health guidance using Generative AI.
@@ -12,6 +11,8 @@ This system combines:
 
 Built for real-world preventive healthcare assistance and academic demonstration.
 
+---
+
 ## 🚀 Key Features
 
 - ❤️ Heart Disease Risk Prediction (ML-based)
@@ -23,6 +24,8 @@ Built for real-world preventive healthcare assistance and academic demonstration
 - 🔐 Secure API key handling using Streamlit Secrets
 - 🖥 Multi-page professional Streamlit interface
 
+---
+
 ## 📊 Machine Learning
 
 - Algorithm: Logistic Regression
@@ -31,23 +34,26 @@ Built for real-world preventive healthcare assistance and academic demonstration
 - Probability-based output for risk interpretation
 - Model trained separately and deployed using .pkl files
 
+---
+
 ## 🧠 Technologies Used
 
- Category         | Tools                                 
- ---------------- | ------------------------------------- 
- Language         | Python  
- Frontend         | Streamlit                             
- Machine Learning | Scikit-learn                          
- Generative AI    | HuggingFace Inference API (Llama 3.1) 
- Data Handling    | Pandas, NumPy                         
- PDF Generation   | ReportLab               
- Model Storage    | Pickle
- Deployment       | Streamlit Cloud / HuggingFace Spaces  
+| Category         | Tools                                 
+| ---------------- | ------------------------------------- 
+| Language         | Python  
+| Frontend         | Streamlit                             
+| Machine Learning | Scikit-learn                          
+| Generative AI    | HuggingFace Inference API (Llama 3.1) 
+| Data Handling    | Pandas, NumPy                         
+| PDF Generation   | ReportLab               
+| Model Storage    | Pickle
+| Deployment       | Streamlit Cloud / HuggingFace Spaces  
 
-
+---
 
 ## 📁 Project Structure
 
+```
 HealthPredictAI/
 │
 ├── Main_APP.py
@@ -73,6 +79,9 @@ HealthPredictAI/
 ├── requirements.txt
 └── .streamlit/
     └── secrets.toml
+```
+
+---
 
 ## ▶️ How to Run the Project
 
@@ -98,6 +107,8 @@ HUGGINGFACE_API_KEY = "your_api_key_here"
 
 streamlit run Main_APP.py
 
+---
+
 ## 📊 Future Enhancements
 
 - 🌍 Multilingual Support
@@ -107,9 +118,13 @@ streamlit run Main_APP.py
 - 📈 Model Performance Dashboard
 - 🔬 Additional Disease Prediction Modules
 
+---
+
 ## ⚠ Disclaimer
 
 This application is developed for educational and preventive healthcare purposes only.
 It does not replace professional medical advice, diagnosis, or treatment.
 
+---
 
+### ⭐ If you like this project, consider starring it on GitHub!
