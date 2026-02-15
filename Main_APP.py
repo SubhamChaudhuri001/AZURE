@@ -2,7 +2,7 @@ import streamlit as st
 
 st.set_page_config(page_title="HealthPredict AI",page_icon="🏩", layout="centered")
 
-st.title("🏥 AI-Based Multi-Disease Risk Prediction System")
+st.title("🏥 AI-Powered Multi-Disease Risk Prediction & Preventive Healthcare System")
 st.caption("Machine Learning + LLM Powered Preventive Healthcare Assistant")
 
 st.sidebar.markdown(

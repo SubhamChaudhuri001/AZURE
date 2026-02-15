@@ -9,7 +9,7 @@ client = InferenceClient(
     token=HF_TOKEN
 )
 
-def generate_health_advice(prompt, max_tokens=500):
+def generate_health_advice(prompt, max_tokens=900):
 
     messages = [
         {"role": "system", "content": "You are a professional medical AI assistant. Provide short, practical lifestyle advice."},
